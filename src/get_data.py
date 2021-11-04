@@ -15,7 +15,6 @@ def get_data():
     os.system(command_unzip_data)
 
 
-
 import kaggle
 import shutil
 
@@ -27,3 +26,4 @@ def get_data_kaggle():
     else : print("Archive deja telechargee")
 
     shutil.unpack_archive("airbnb-listings-reviews.zip", ".")
+
