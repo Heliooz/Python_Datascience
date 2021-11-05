@@ -13,7 +13,16 @@ import plotly_express as px
 
 # Function 
 
-def filter_data(city, values): 
+def filter_data(city, values, checklist): 
+    if(city == 'default'):
+        # data = airbnb_data
+        # query = ''
+        # for city in checklist:
+        #     query = query + "city == '" + city + "' or "
+        # query= query[:-4]
+        # print(query)
+        # data = data.query(query)
+        return dataframes[checklist]
     if(city == ''):
         data = airbnb_data
     else : 
@@ -43,24 +52,51 @@ if __name__ == '__main__':
                     html.H2(children='Graph choice'),
                     dcc.Dropdown(
                         id='graph_choice',
+                        clearable=False,
                         options=[
                             {'label': 'Airbnb Map', 'value':'map'},
-                            {'label': 'Histogram', 'value':'hist'}
+                            {'label': 'Histogram', 'value':'hist'},
+                            {'label': 'Price range', 'value': 'price'}
                         ],
                         value='map'
                     ),
 
                     html.Hr(),
 
+
                     html.H2(children='Graph settings'),
 
-                    html.H3(children='City choice'),
-                    dcc.Dropdown(id='city_choice'),
+                    html.Div(
+                        id='city_choice_div',
+                        children = [
+                            html.H3(children='City choice'),
+                            dcc.Dropdown(
+                                id='city_choice',
+                                clearable=False
+                            ),
+                        ]
+                    ),                    
 
-                    html.H3(children='Price range'),
-                    dcc.RangeSlider(
-                        id='price_range',
-                        tooltip={"placement": "bottom", "always_visible": True}
+                    html.Div(
+                        id='price_range_div',
+                        children=[
+                            html.H3(children='Price range'),
+                            dcc.RangeSlider(
+                                id='price_range',
+                                tooltip={"placement": "bottom", "always_visible": True}
+                            )
+                        ]
+                    ),
+
+                    html.Div(
+                        id='city_checklist_div',
+                        children=[
+                            html.H3(children='City choice(s)'),
+                            dcc.Dropdown(
+                                id='city_checklist',
+                                #multi=True
+                            ) 
+                        ]
                     ),
 
                     html.Hr(),
@@ -69,7 +105,7 @@ if __name__ == '__main__':
 
                     
                 ],
-                style={'border-right':'1px gray solid','flex': 1,'padding': 10, 'height': '100%'}
+                style={'flex': 1,'padding': 10}
             ),
             html.Div(
                 id='fig',
@@ -78,7 +114,7 @@ if __name__ == '__main__':
 
                     dcc.Graph(id='graph_figure')
                 ],
-                style={'flex': 3,'padding': 10}
+                style={'border-left':'1px gray solid','flex': 3,'padding': 10}
             )
         ],
         style={'display': 'flex', 'flex-direction': 'row'}
@@ -87,19 +123,23 @@ if __name__ == '__main__':
     @app.callback(
         [
             Output(component_id='city_choice', component_property='options'),
-            Output(component_id='city_choice', component_property='value')
+            Output(component_id='city_choice', component_property='value'),
+            Output(component_id='city_choice_div', component_property='style'),
+            Output(component_id='city_checklist', component_property='options'),
+            Output(component_id='city_checklist', component_property='value'),
+            Output(component_id='city_checklist_div', component_property='style'),
         ],
         Input(component_id='graph_choice', component_property='value')
     )
     def setup_city_choice(input_graph):
         choices = [{'label': city, 'value': city} for city in cities]
         if(input_graph == 'map'):
-            return [choices,'Paris']
+            return [choices,'Paris',{'display':'block'},choices,'Paris',{'display':'none'}]
         elif(input_graph == 'hist'):            
             choices.append({'label': 'All', 'value': ''})
-            return [choices,'Paris']
+            return [choices,'Paris',{'display':'block'},choices,'Paris',{'display':'none'}]
         else : 
-            return ["",""]
+            return [choices,'default',{'display':'none'},choices,'Paris',{'display':'block'}]
     
     
     @app.callback(
@@ -107,19 +147,22 @@ if __name__ == '__main__':
             Output(component_id='price_range', component_property='min'),
             Output(component_id='price_range', component_property='max'),
             Output(component_id='price_range', component_property='value'),
+            Output(component_id='price_range_div', component_property='style')
         ],
         Input(component_id='city_choice', component_property='value')
     )
     def setup_range(input_city):
+        if(input_city == 'default'):
+            return [0, 0, [0, 0], {'display':'none'}]
         if(input_city == ''):
             df = airbnb_data
         else : 
             df = dataframes[input_city]
 
         min = df['price'].min()
-        max = df['price'].max()
+        max = df['price'].mean()*10
 
-        return [min, max, [min, max]]
+        return [min, max, [min, max], {'display':'block'}]
 
     @app.callback(
         [
@@ -130,22 +173,25 @@ if __name__ == '__main__':
             Input(component_id='graph_choice', component_property='value'),
             Input(component_id='city_choice', component_property='value'),
             Input(component_id='price_range', component_property='value'),
+            Input(component_id='city_checklist', component_property='value'),
         ]
     )
-    def graph_setup(graph_choice, city_choice, price_range):
-        data = filter_data(city=city_choice, values=price_range)
+    def graph_setup(graph_choice, city_choice, price_range, city_checklist):
+        data = filter_data(city=city_choice, values=price_range, checklist=city_checklist)
         if(graph_choice == 'map'):
             title = 'Map of {}'.format(city_choice)
             fig= px.scatter(data, x='longitude', y='latitude', color='neighbourhood')
         elif(graph_choice == 'hist'):
             title = 'Histogram of the Airbnb value of ' + ('every cities' if city_choice == '' else city_choice)
             fig = px.histogram(data, x='price')
-        else: title = ''
+        elif(graph_choice == 'price'):
+            title = 'Price of an Airbnb depending on the accomodate number'
+            fig = px.scatter(data, x='price', y='accommodates', color='neighbourhood')
+        else: 
+            title = 'Error'
+            fig = px.box(data)
 
         return[title, fig]
      
     
     app.run_server(debug=True)
-
-    
-
