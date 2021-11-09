@@ -1,6 +1,5 @@
 # Local import
 
-from os import chdir
 from src.read_data import read_data
 from src.get_data import get_data
 
@@ -15,14 +14,14 @@ import plotly_express as px
 
 def filter_data(city, values, checklist): 
     if(city == 'default'):
-        # data = airbnb_data
-        # query = ''
-        # for city in checklist:
-        #     query = query + "city == '" + city + "' or "
-        # query= query[:-4]
-        # print(query)
-        # data = data.query(query)
-        return dataframes[checklist]
+        data = airbnb_data
+        if(checklist == []): return data
+        query = ''
+        for city in checklist:
+            query = query + "city == '" + city + "' or "
+        query= query[:-4]
+        data = data.query(query)
+        return data
     if(city == ''):
         data = airbnb_data
     else : 
@@ -56,7 +55,8 @@ if __name__ == '__main__':
                         options=[
                             {'label': 'Airbnb Map', 'value':'map'},
                             {'label': 'Histogram', 'value':'hist'},
-                            {'label': 'Price range', 'value': 'price'}
+                            {'label': 'Price range', 'value': 'price'},
+                            {'label': 'Grades', 'value': 'grade'}
                         ],
                         value='map'
                     ),
@@ -94,7 +94,8 @@ if __name__ == '__main__':
                             html.H3(children='City choice(s)'),
                             dcc.Dropdown(
                                 id='city_checklist',
-                                #multi=True
+                                clearable=False,
+                                multi=True
                             ) 
                         ]
                     ),
@@ -120,6 +121,8 @@ if __name__ == '__main__':
         style={'display': 'flex', 'flex-direction': 'row'}
     )
 
+    # Callback
+
     @app.callback(
         [
             Output(component_id='city_choice', component_property='options'),
@@ -134,12 +137,12 @@ if __name__ == '__main__':
     def setup_city_choice(input_graph):
         choices = [{'label': city, 'value': city} for city in cities]
         if(input_graph == 'map'):
-            return [choices,'Paris',{'display':'block'},choices,'Paris',{'display':'none'}]
+            return [choices,'Paris',{'display':'block'},choices,['Paris'],{'display':'none'}]
         elif(input_graph == 'hist'):            
             choices.append({'label': 'All', 'value': ''})
-            return [choices,'Paris',{'display':'block'},choices,'Paris',{'display':'none'}]
+            return [choices,'Paris',{'display':'block'},choices,['Paris'],{'display':'none'}]
         else : 
-            return [choices,'default',{'display':'none'},choices,'Paris',{'display':'block'}]
+            return [choices,'default',{'display':'none'},choices,['Paris'],{'display':'block'}]
     
     
     @app.callback(
@@ -186,7 +189,10 @@ if __name__ == '__main__':
             fig = px.histogram(data, x='price')
         elif(graph_choice == 'price'):
             title = 'Price of an Airbnb depending on the accomodate number'
-            fig = px.scatter(data, x='price', y='accommodates', color='neighbourhood')
+            fig = px.scatter(data, x='price', y='accommodates', color='neighbourhood', facet_col='city')
+        elif(graph_choice == 'grade'):
+            title = 'Percentage of the grades of listed Airbnb'
+            fig = px.histogram(data, x='review_scores_value', color='city')
         else: 
             title = 'Error'
             fig = px.box(data)
