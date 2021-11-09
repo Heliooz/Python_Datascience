@@ -1,11 +1,9 @@
-# Require : 
-
-# - kaggle 
-# - kaggle key 
-
 import os
 
 def get_data():
+    """ Get the data from the web using command line (Linux only) \n
+        Kaggle module and key setup needed
+    """
     if("airbnb-listings-reviews.zip" not in os.listdir()):
         command_get_kaggle_data = "kaggle datasets download -d mysarahmadbhat/airbnb-listings-reviews"
         os.system(command_get_kaggle_data)
@@ -19,6 +17,9 @@ import kaggle
 import shutil
 
 def get_data_kaggle():
+    """ Get the data from the web using command line (Linux only) \n
+        Kaggle module and key setup needed
+    """
     kaggle.api.authenticate()
 
     if("airbnb-listings-reviews.zip" not in os.listdir()):
