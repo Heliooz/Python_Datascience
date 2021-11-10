@@ -1,6 +1,7 @@
 # Local import
 
 from math import pi
+from os import WIFCONTINUED
 from src.read_data import read_data
 from src.get_data import get_data_kaggle as get_data
 from src.create_map import create_maps
@@ -55,8 +56,10 @@ def clean_data(data):
     to_delete.remove('latitude')
     to_delete.remove('city')
     to_delete.remove('neighbourhood')
+    to_delete.remove('district')
 
     data.drop(to_delete, inplace=True, axis=1)
+    data = data.drop(data[data.price == 0].index)
 
     return data
 
@@ -66,8 +69,6 @@ def clean_data(data):
 if __name__ == '__main__': 
     get_data()
     airbnb_data = clean_data(read_data())
-
-    print(airbnb_data)
 
     cities = airbnb_data['city'].unique()   
     dataframes = {city:airbnb_data.query('city == @city') for city in cities}
@@ -87,6 +88,7 @@ if __name__ == '__main__':
                         clearable=False,
                         options=[
                             {'label': 'Airbnb Map', 'value':'map'},
+                            {'label': 'Airbnb Heatmap', 'value':'heatmap'},
                             {'label': 'Histogram', 'value':'hist'},
                             {'label': 'Price range', 'value': 'price'},
                             {'label': 'Grades', 'value': 'grade'}
@@ -150,10 +152,18 @@ if __name__ == '__main__':
                         hidden=True
                     ),
 
-                    html.Iframe(
-                        id='map', 
-                        style={'display': 'none'}
-                    )
+                    html.Div(
+                        id='map_display',
+                        children = html.Iframe
+                        (
+                            id='map', 
+                            style={'display': 'block'},
+                            height='400px',
+                            width='100%'
+                        ),
+                        hidden=False
+                    ),
+                    
                 ],
                 style={'border-left':'1px gray solid','flex': 3,'padding': 10}
             )
@@ -185,7 +195,7 @@ if __name__ == '__main__':
             [object]: List of the different components needed to create the expected layout
         """
         choices = [{'label': city, 'value': city} for city in cities]
-        if(input_graph == 'map'):
+        if(input_graph == 'map' or input_graph == 'heatmap'):
             return [choices,'Paris',{'display':'block'},choices,['Paris'],{'display':'none'},{'display':'none'}]
         elif(input_graph == 'hist'):            
             choices.append({'label': 'All', 'value': ''})
@@ -230,7 +240,8 @@ if __name__ == '__main__':
             Output(component_id='graph_title', component_property='children'),
             Output(component_id='graph_figure', component_property='figure'),
             Output(component_id='figure_display', component_property='hidden'),
-            Output(component_id='map', component_property='display')
+            Output(component_id='map_display', component_property='hidden'),
+            Output(component_id='map', component_property='srcDoc'),
         ],
         [
             Input(component_id='graph_choice', component_property='value'),
@@ -251,32 +262,42 @@ if __name__ == '__main__':
         Returns : 
             [] : Title and figure to display
         """
-        data = filter_data(city=city_choice, values=price_range, checklist=city_checklist)
+
+        fig = px.box(airbnb_data, x='price', y='city')
+        map = open('src/map/Paris.html', 'r').read()
+
         if(graph_choice == 'map'):
             title = 'Map of {}'.format(city_choice)
-            fig= px.scatter(data, x='longitude', y='latitude',
-                color='neighbourhood', labels={'longitude':'Longitude', 'latitude':'Latitude'})
-        elif(graph_choice == 'hist'):
-            title = 'Histogram of the Airbnb value of ' + ('every cities' if city_choice == '' else city_choice)
-            fig = px.histogram(data, x='price', labels={'price':'Price'}, histnorm='percent')
-        elif(graph_choice == 'price'):
-            title = 'Price of an Airbnb depending on the accomodate number'
-            fig = px.scatter(data, x='price', y='accommodates',
-                color='city', labels={'price':'Price', 'accommodates':'Accommodate number'})
-        elif(graph_choice == 'grade'):
-            title = 'Grades of listed Airbnb'
-            fig = px.histogram(data, x='review_scores_value',
-                color='city', labels={'review_scores_value':'Score'})
+            map = open('src/map/{}.html'.format(city_choice), 'r').read()
+        elif(graph_choice == 'heatmap'):
+            title = 'Heatmap of {}'.format(city_choice)
+            map = open('src/map/{}_heatmap.html'.format(city_choice), 'r').read()
         else: 
-            title = 'Error'
-            fig = px.box(data)
+            data = filter_data(city=city_choice, values=price_range, checklist=city_checklist)
+            if(graph_choice == 'hist'):
+                title = 'Histogram of the Airbnb value of ' + ('every cities' if city_choice == '' else city_choice)
+                fig = px.histogram(data, x='price', labels={'price':'Price'}, histnorm='percent')
+            elif(graph_choice == 'price'):
+                title = 'Price of an Airbnb depending on the accomodate number'
+                fig = px.scatter(data, x='price', y='accommodates',
+                    color='city', labels={'price':'Price', 'accommodates':'Accommodate number'})
+            elif(graph_choice == 'grade'):
+                title = 'Grades of listed Airbnb'
+                fig = px.histogram(data, x='review_scores_value',
+                    color='city', labels={'review_scores_value':'Score'})
+            else: 
+                title = 'Error'
         
         print(graph_choice)
 
-        display_fig = (graph_choice == 'map')
-        display_map = {'display':'block'} if (graph_choice == 'map') else {'display':'none'}
+        display_fig = (graph_choice == 'map' or graph_choice == 'heatmap')
+        display_map = not display_fig
 
-        return[title, fig, display_fig, display_map]
+
+        print(display_fig)
+        print(display_map)
+
+        return[title, fig, display_fig, display_map, map]
      
     
     app.run_server()
