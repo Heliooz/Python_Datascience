@@ -31,5 +31,7 @@ def get_data_kaggle():
         print("Download complete")
     else : print("Archive deja telechargee")
 
+    print()
+
     shutil.unpack_archive("airbnb-listings-reviews.zip", ".")
 

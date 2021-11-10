@@ -1,7 +1,5 @@
 # Local import
 
-from math import pi
-from os import WIFCONTINUED
 from src.read_data import read_data
 from src.get_data import get_data_kaggle as get_data
 from src.create_map import create_maps
@@ -72,6 +70,8 @@ def clean_data(data):
     data = data.drop(data[data.price == 0].index) # Drop rows with absurd values
 
     print("Data cleaned")
+
+    print()
 
     return data
 
