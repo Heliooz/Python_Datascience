@@ -1,4 +1,5 @@
 import os
+from posix import listdir
 import folium
 
 def generate_colors(list_value):
@@ -13,14 +14,15 @@ def generate_colors(list_value):
     max_size = len(tab_color)
     sample_size = len(list_value)
 
-    step = int(max_size/(sample_size*1.5))
+    step = int(max_size/(sample_size*1.2))
 
     to_return = {list_value[index] : tab_color[index*step] for index in range(len(list_value))}
 
     return to_return
 
 def create_maps(data_frames):
-    os.mkdir('src/map')
+    if('map' not in listdir('src')):
+        os.mkdir('src/map')
     for data_frame in data_frames:
         print(str(data_frame) + "'s Maps are building ...")
         actual_data = data_frames[data_frame]
@@ -64,7 +66,7 @@ def create_maps(data_frames):
             max_lon=max_longitude
         )
 
-        print("Placing markers on the map ...")
+        print("Placing markers on the maps ...")
         for element in actual_data.iterrows():
             element = element[1]
             lat = element['latitude']
@@ -91,3 +93,4 @@ def create_maps(data_frames):
         actual_map.save('src/map/' + data_frame +  '.html')
         actual_heatmap.save('src/map/' + data_frame +  '_heatmap.html')
         print(data_frame + ' maps saved')
+        print()

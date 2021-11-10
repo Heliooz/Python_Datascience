@@ -23,7 +23,7 @@ def get_data_kaggle():
 
     print("Authentification ...")
     kaggle.api.authenticate()
-    print("Authentification successfull")
+    print("Authentification successful")
 
     if("airbnb-listings-reviews.zip" not in os.listdir()):
         print("Downloading files from kaggle ...")
