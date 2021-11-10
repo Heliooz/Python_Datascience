@@ -47,7 +47,8 @@ def filter_data(city, values, checklist):
 
     return data
 
-def clean_data(data): 
+def clean_data(data):
+    print("Cleaning data...")
     to_delete = data.columns.tolist()
     to_delete.remove('price')
     to_delete.remove('review_scores_value')
@@ -60,6 +61,8 @@ def clean_data(data):
 
     data.drop(to_delete, inplace=True, axis=1)
     data = data.drop(data[data.price == 0].index)
+
+    print("Data cleaned")
 
     return data
 

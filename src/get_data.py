@@ -20,10 +20,15 @@ def get_data_kaggle():
     """ Get the data from the web using command line (Linux only) \n
         Kaggle module and key setup needed
     """
+
+    print("Authentification ...")
     kaggle.api.authenticate()
+    print("Authentification successfull")
 
     if("airbnb-listings-reviews.zip" not in os.listdir()):
+        print("Downloading files from kaggle ...")
         kaggle.api.dataset_download_files("mysarahmadbhat/airbnb-listings-reviews")
+        print("Download complete")
     else : print("Archive deja telechargee")
 
     shutil.unpack_archive("airbnb-listings-reviews.zip", ".")
