@@ -51,7 +51,7 @@ Afin d'executer le code plusieurs étapes sont nécessaires :
 
 Tout d'abord on peut cloner le projet : `git clone https://github.com/Heliooz/Python_Datascience.git`
 
-Ensuite, il faut télécharge les paquets nécessaires. Ces paquets sont listés dans le fichiers *requirements.txt*.
+Ensuite, il faut télécharger les paquets nécessaires. Ces paquets sont listés dans le fichiers *requirements.txt*.
 
 Afin de les installer on peut utiliser la commande suivante après s'être placé dans le repertoire du projet : `python -m pip install -r requirements.txt`
 
