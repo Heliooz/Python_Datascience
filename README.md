@@ -49,19 +49,18 @@ Le dernier graphique représente à l'aide d'un scatter plot le prix de chaque a
 
 Afin d'executer le code plusieurs étapes sont nécessaires : 
 
-Tout d'abord il faut télécharge les paquets nécessaires. Ces paquets sont listés dans le fichiers *requirements.txt*.
+Tout d'abord on peut cloner le projet : `git clone https://github.com/Heliooz/Python_Datascience.git`
 
+Ensuite, il faut télécharge les paquets nécessaires. Ces paquets sont listés dans le fichiers *requirements.txt*.
 
-Afin de les installer on peut utiliser la commande suivante : *python -m pip install -r requirements.txt*
+Afin de les installer on peut utiliser la commande suivante après s'être placé dans le repertoire du projet : `python -m pip install -r requirements.txt`
 
-Ensuite il faut configurer la clef kaggle afin de pouvoir télécharger le dataset.
+Après il faut configurer la clef kaggle afin de pouvoir télécharger le dataset.
 
 Pour cela suivez les instructions présentes dans la partie *Authentication* de la page suivante :
 [kaggle](https://www.kaggle.com/docs/api)
 
-Ensuite on peut cloner le projet : `git clone https://github.com/Heliooz/Python_Datascience.git`
-
-Enfin après s'être placé dans le dossier du projet on peut lancer le main grace à : 
+Enfin on peut lancer le main grace à : 
 
 * Linux / MacOS : `python3 main.py`
 * Windows : `python main.py`
